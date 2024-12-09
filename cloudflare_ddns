@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Cloudflare API and record details
+CF_API_TOKEN="your API token"
+CF_ZONE_ID="your zone ID"
+CF_RECORD_ID="your record ID"
+CF_RECORD_NAME="your domain name"
+CF_RECORD_PROXIED=false
+
+# Get the current public IP address
+CURRENT_IP=$(curl -s http://ipv4.icanhazip.com)
+DATETIME=$(date)
+
+# Get the current IP address from Cloudflare
+RECORD_IP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID" \
+     -H "Authorization: Bearer $CF_API_TOKEN" \
+     -H "Content-Type: application/json" | jq -r '.result.content')
+
+# Update the DNS record if the IP has changed
+if [ "$CURRENT_IP" != "$RECORD_IP" ]; then
+    UPDATE_RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID" \
+         -H "Authorization: Bearer $CF_API_TOKEN" \
+         -H "Content-Type: application/json" \
+         --data "{\"type\":\"A\",\"name\":\"$CF_RECORD_NAME\",\"content\":\"$CURRENT_IP\",\"proxied\":$CF_RECORD_PROXIED}")
+
+    if echo "$UPDATE_RESPONSE" | grep -q '"success":true'; then
+        echo "$DATETIME - DNS record updated to $CURRENT_IP"
+    else
+        echo "$DATETIME - Failed to update DNS record"
+    fi
+else
+    echo "$DATETIME - IP has not changed"
+fi
