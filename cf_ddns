@@ -1,14 +1,14 @@
-#!/bin/bash
+#!/bin/sh
 
 # Cloudflare API and record details
 CF_API_TOKEN="your API token"
 CF_ZONE_ID="your zone ID"
 CF_RECORD_ID="your record ID"
 CF_RECORD_NAME="your domain name"
-CF_RECORD_PROXIED=false
+CF_RECORD_PROXIED=true
 
 # Get the current public IP address
-CURRENT_IP=$(curl -s http://ipv4.icanhazip.com)
+CURRENT_IP=$(curl -s https://ipv4.icanhazip.com)
 DATETIME=$(date)
 
 # Get the current IP address from Cloudflare
